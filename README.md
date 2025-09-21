@@ -1,3 +1,20 @@
+Getting Started with the Project
+
+To run this project locally, you'll need an API key from OpenWeatherMap. Follow these steps to configure your environment:
+
+    Go to the OpenWeatherMap website (https://openweathermap.org/) and register to get a free API key.
+
+    In the project's root folder, create a new file named .env.
+
+    In your new .env file, paste your API key in the following format:
+    VITE_OPENWEATHER_API_KEY=Your_API_key
+
+    I tried to not upload my .env key but it did anyway even when I put it in gitignore, probablt did something wrong but it didnt work for me so I deactivated all my keys. Use you`re own damn key.
+
+    
+
+
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
