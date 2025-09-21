@@ -6,15 +6,17 @@ interface CityDetailsProps {
   cityName: string;
 }
 
-interface Forecast {
+interface ForecastItem {
   dt: number;
-  temp: number;
+  main: {
+    temp: number;
+  };
   weather: { icon: string; description: string }[];
 }
 
 export default function CityDetails({ cityId, cityName }: CityDetailsProps) {
   const [weather, setWeather] = useState<any>(null);
-  const [forecast, setForecast] = useState<Forecast[]>([]);
+  const [forecast, setForecast] = useState<ForecastItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,29 +32,19 @@ export default function CityDetails({ cityId, cityName }: CityDetailsProps) {
     setError(null);
 
     
-    fetch(`https://api.openweathermap.org/data/2.5/weather?id=${cityId}&appid=${API_KEY}`)
+    fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?id=${cityId}&appid=${API_KEY}&units=metric&lang=se`
+    )
       .then((res) => {
-        if (!res.ok) throw new Error(`Coord-anrop misslyckades: ${res.status}`);
+        if (!res.ok) throw new Error(`Prognos-anrop misslyckades: ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        const lat = data?.coord?.lat;
-        const lon = data?.coord?.lon;
-        if (lat == null || lon == null) throw new Error("Koordinater saknas i svaret.");
-
-        
-        return fetch(
-          `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&lang=se&appid=${API_KEY}`
-        );
-      })
-      .then((res) => {
-        if (!res.ok) throw new Error(`OneCall-anrop misslyckades: ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setWeather(data?.current ?? null);
-        const hours = Array.isArray(data?.hourly) ? data.hourly.slice(0, 48) : [];
-        setForecast(hours);
+        setWeather(data?.list?.[0]?.main ?? null);
+        const upcomingForecast = Array.isArray(data?.list)
+          ? data.list.slice(0, 8)
+          : [];
+        setForecast(upcomingForecast);
       })
       .catch((err: any) => {
         console.error("CityDetails fetch error:", err);
@@ -69,24 +61,22 @@ export default function CityDetails({ cityId, cityName }: CityDetailsProps) {
     <>
       <h2>{cityName}</h2>
       <p>Temperatur: {Math.round(weather.temp)}°C</p>
-      <p>Vind: {weather.wind_speed} m/s</p>
-      <p>Fuktighet: {weather.humidity}%</p>
-
-      <h3>Forecast (idag + imorgon)</h3>
+      <h3>Prognos de närmsta 24 timmarna</h3>
       <div style={{ display: "flex", gap: 10, overflowX: "auto", padding: "8px 0" }}>
-        {forecast.map((hour) => (
-          <div key={hour.dt} style={{ minWidth: 80, textAlign: "center" }}>
-            <div>{new Date(hour.dt * 1000).getHours()}:00</div>
+        {forecast.map((item) => (
+          <div key={item.dt} style={{ minWidth: 80, textAlign: "center" }}>
+            <div>{new Date(item.dt * 1000).getHours()}:00</div>
             <img
-              src={`https://openweathermap.org/img/wn/${hour.weather[0].icon}@2x.png`}
-              alt={hour.weather[0].description}
+              src={`https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`}
+              alt={item.weather[0].description}
               style={{ width: 48, height: 48 }}
             />
-            <div>{Math.round(hour.temp)}°C</div>
+            <div>{Math.round(item.main.temp)}°C</div>
           </div>
         ))}
       </div>
     </>
   );
 }
+
 

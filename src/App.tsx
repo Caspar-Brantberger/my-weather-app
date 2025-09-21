@@ -18,6 +18,10 @@ function App() {
 
   useEffect(() => {
     const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
+
+    console.log(import.meta.env.VITE_OPENWEATHER_API_KEY);
+
+
     if (!apiKey) {
       console.warn('VITE_OPENWEATHER_API_KEY saknas i miljön');
       return;
